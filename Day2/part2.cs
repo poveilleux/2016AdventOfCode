@@ -1,0 +1,95 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Day2
+{
+    public static class MathHelper
+    {
+        public static int Clamp(int value, int min, int max)
+        {
+            return value < min ? min : (value > max ? max : value);
+        }
+    }
+
+    public class AccessControl
+    {
+        private readonly string[,] _inputPad =
+        {
+            { "", "", "1", "", "" }, 
+            { "", "2", "3", "4", "" },
+            { "5", "6", "7", "8", "9" },
+            { "", "A", "B", "C", "" },
+            { "", "", "D", "", "" }
+        };
+
+        private readonly Dictionary<char, Func<Tuple<int, int>, Tuple<int, int>>> _moves;
+
+        public AccessControl()
+        {
+            _moves = new Dictionary<char, Func<Tuple<int, int>, Tuple<int, int>>>
+            {
+                { 'U', from => Move(from, new Tuple<int, int>(-1, 0)) },
+                { 'D', from => Move(from, new Tuple<int, int>(1, 0)) },
+                { 'L', from => Move(from, new Tuple<int, int>(0, -1)) },
+                { 'R', from => Move(from, new Tuple<int, int>(0, 1)) }
+            };
+        }
+
+        public string BruteForceCode(IEnumerable<string> instructions)
+        {
+            var code = string.Empty;
+            var pos = GetStartPosition("5");
+            foreach (var instruction in instructions)
+            {
+                pos = instruction.Aggregate(pos, (current, c) => _moves[c](current));
+                code += _inputPad[pos.Item1, pos.Item2];
+            }
+
+            return code;
+        }
+
+        public Tuple<int, int> GetStartPosition(string value)
+        {
+            for (int x = 0; x <= _inputPad.GetUpperBound(0); x++)
+            {
+                for (int y = 0; y <= _inputPad.GetUpperBound(1); y++)
+                {
+                    if (value == _inputPad[x,y])
+                    {
+                        return new Tuple<int, int>(x, y);
+                    }
+                }
+            }
+
+            throw new Exception("StartPosition not found.");
+        }
+
+        private Tuple<int, int> Move(Tuple<int, int> from, Tuple<int, int> to)
+        {
+            int x = MathHelper.Clamp(from.Item1 + to.Item1, 0, _inputPad.GetUpperBound(0));
+            int y = MathHelper.Clamp(from.Item2 + to.Item2, 0, _inputPad.GetUpperBound(1));
+
+            if (_inputPad[x, y] == string.Empty) return from;
+
+            return new Tuple<int, int>(x, y);
+        }
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            const string instructions = @"LURLDDLDULRURDUDLRULRDLLRURDUDRLLRLRURDRULDLRLRRDDULUDULURULLURLURRRLLDURURLLUURDLLDUUDRRDLDLLRUUDURURRULURUURLDLLLUDDUUDRULLRUDURRLRLLDRRUDULLDUUUDLDLRLLRLULDLRLUDLRRULDDDURLUULRDLRULRDURDURUUUDDRRDRRUDULDUUULLLLURRDDUULDRDRLULRRRUUDUURDULDDRLDRDLLDDLRDLDULUDDLULUDRLULRRRRUUUDULULDLUDUUUUDURLUDRDLLDDRULUURDRRRDRLDLLURLULDULRUDRDDUDDLRLRRDUDDRULRULULRDDDDRDLLLRURDDDDRDRUDUDUUDRUDLDULRUULLRRLURRRRUUDRDLDUDDLUDRRURLRDDLUUDUDUUDRLUURURRURDRRRURULUUDUUDURUUURDDDURUDLRLLULRULRDURLLDDULLDULULDDDRUDDDUUDDUDDRRRURRUURRRRURUDRRDLRDUUULLRRRUDD
+DLDUDULDLRDLUDDLLRLUUULLDURRUDLLDUDDRDRLRDDUUUURDULDULLRDRURDLULRUURRDLULUDRURDULLDRURUULLDLLUDRLUDRUDRURURUULRDLLDDDLRUDUDLUDURLDDLRRUUURDDDRLUDDDUDDLDUDDUUUUUULLRDRRUDRUDDDLLLDRDUULRLDURLLDURUDDLLURDDLULLDDDRLUDRDDLDLDLRLURRDURRRUDRRDUUDDRLLUDLDRLRDUDLDLRDRUDUUULULUDRRULUDRDRRLLDDRDDDLULURUURULLRRRRRDDRDDRRRDLRDURURRRDDULLUULRULURURDRRUDURDDUURDUURUURUULURUUDULURRDLRRUUDRLLDLDRRRULDRLLRLDUDULRRLDUDDUUURDUDLDDDUDL
+RURDRUDUUUUULLLUULDULLLDRUULURLDULULRDDLRLLRURULLLLLLRULLURRDLULLUULRRDURRURLUDLULDLRRULRDLDULLDDRRDLLRURRDULULDRRDDULDURRRUUURUDDURULUUDURUULUDLUURRLDLRDDUUUUURULDRDUDDULULRDRUUURRRDRLURRLUUULRUDRRLUDRDLDUDDRDRRUULLLLDUUUULDULRRRLLRLRLRULDLRURRLRLDLRRDRDRLDRUDDDUUDRLLUUURLRLULURLDRRULRULUDRUUURRUDLDDRRDDURUUULLDDLLDDRUDDDUULUDRDDLULDDDDRULDDDDUUUURRLDUURULRDDRDLLLRRDDURUDRRLDUDULRULDDLDDLDUUUULDLLULUUDDULUUDLRDRUDLURDULUDDRDRDRDDURDLURLULRUURDUDULDDLDDRUULLRDRLRRUURRDDRDUDDLRRLLDRDLUUDRRDDDUUUDLRRLDDDUDRURRDDUULUDLLLRUDDRULRLLLRDLUDUUUUURLRRUDUDDDDLRLLULLUDRDURDDULULRDRDLUDDRLURRLRRULRL
+LDUURLLULRUURRDLDRUULRDRDDDRULDLURDDRURULLRUURRLRRLDRURRDRLUDRUUUULLDRLURDRLRUDDRDDDUURRDRRURULLLDRDRDLDUURLDRUULLDRDDRRDRDUUDLURUDDLLUUDDULDDULRDDUUDDDLRLLLULLDLUDRRLDUUDRUUDUDUURULDRRLRRDLRLURDRURURRDURDURRUDLRURURUUDURURUDRURULLLLLUDRUDUDULRLLLRDRLLRLRLRRDULRUUULURLRRLDRRRDRULRUDUURRRRULDDLRULDRRRDLDRLUDLLUDDRURLURURRLRUDLRLLRDLLDRDDLDUDRDLDDRULDDULUDDLLDURDULLDURRURRULLDRLUURURLLUDDRLRRUUDULRRLLRUDRDUURLDDLLURRDLRUURLLDRDLRUULUDURRDULUULDDLUUUDDLRRDRDUDLRUULDDDLDDRUDDD
+DRRDRRURURUDDDRULRUDLDLDULRLDURURUUURURLURURDDDDRULUDLDDRDDUDULRUUULRDUDULURLRULRDDLDUDLDLULRULDRRLUDLLLLURUDUDLLDLDRLRUUULRDDLUURDRRDLUDUDRULRRDDRRLDUDLLDLURLRDLRUUDLDULURDDUUDDLRDLUURLDLRLRDLLRUDRDUURDDLDDLURRDDRDRURULURRLRLDURLRRUUUDDUUDRDRULRDLURLDDDRURUDRULDURUUUUDULURUDDDDUURULULDRURRDRDURUUURURLLDRDLDLRDDULDRLLDUDUDDLRLLRLRUUDLUDDULRLDLLRLUUDLLLUUDULRDULDLRRLDDDDUDDRRRDDRDDUDRLLLDLLDLLRDLDRDLUDRRRLDDRLUDLRLDRUURUDURDLRDDULRLDUUUDRLLDRLDLLDLDRRRLLULLUDDDLRUDULDDDLDRRLLRDDLDUULRDLRRLRLLRUUULLRDUDLRURRRUULLULLLRRURLRDULLLRLDUUUDDRLRLUURRLUUUDURLRDURRDUDDUDDRDDRUD";
+            
+            var accessControl = new AccessControl();
+            var result = accessControl.BruteForceCode(instructions.Split('\n').Select(i => i.Trim()));
+            Console.WriteLine(result);
+            Console.Read();
+        }
+    }
+}
