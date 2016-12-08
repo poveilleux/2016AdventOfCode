@@ -1,0 +1,43 @@
+<html>
+<head>
+</head>
+
+<body>
+<p id="result"></p>
+
+<script src="values.js"></script>
+<script>
+
+function checkTriangle(a, b, c) {
+	if ((a + b <= c) || (a + c <= b) || (b + c <= a)) {
+		return false;
+	}
+	return true;
+}
+
+var lines = [];
+values.split("\n").forEach(function (e) {
+	var temp = [];
+	e.split(" ").forEach(function (n) {
+		if (n) {
+			temp.push(parseInt(n)); 
+		}
+	});
+	lines.push(temp);
+});
+
+var numbers = [];
+lines.forEach(function (l) { numbers.push(l[0]); });
+lines.forEach(function (l) { numbers.push(l[1]); });
+lines.forEach(function (l) { numbers.push(l[2]); });
+
+var count = 0;
+
+for (var i = 0; i < numbers.length; i += 3) {
+	count += checkTriangle(numbers[i], numbers[i + 1], numbers[i + 2]) ? 1 : 0;
+}
+
+document.getElementById("result").innerHTML = count;
+</script>
+</body>
+</html>
